@@ -1,6 +1,6 @@
 # 信箱工作台（Inbox Workbench）
 
-Windows 上的 Codex Gmail 工具。每次執行從 gogcli 取得最新授權清單，最多同時查詢 3 個信箱。可繼續新增帳號。每個信箱單獨回傳來源、查詢結果及錯誤。預設每個信箱最多回傳 10 個郵件串的中繼資料，可調到 50 個。
+Windows 上的 Codex Gmail 工具，可連接多個信箱，按來源整理查詢結果，並在你確認郵件內容後寄信。使用者需自備 Google Cloud 專案的桌面 OAuth 設定。
 
 ## 安裝
 
@@ -21,6 +21,20 @@ Windows 上的 Codex Gmail 工具。每次執行從 gogcli 取得最新授權清
 5. 雙擊 **Open Gmail Manager.cmd**，按「匯入 OAuth 設定」選取自己的 JSON。已設定過信箱工作台的 gogcli 用戶端可沿用。
 6. 按「新增 Gmail」，在 Google 選取對應帳號並同意讀取與寄信。每個信箱各自同意，可共用同一個 Cloud 專案。回到工具，按「測試全部信箱」。
 
+## 多信箱與 Google OAuth 限制
+
+一組桌面 OAuth 用戶端可供多個 Gmail 信箱使用。OAuth JSON 只需匯入一次，每個 Gmail 帳號仍要在 Google 頁面各自同意。新增第 3 個或更多信箱時，沿用同一組設定即可。下文的兩個帳號是驗收範例。工具每次最多並行查詢 3 個信箱，有更多信箱時會依序排入查詢。
+
+| Google Cloud 專案狀態 | 新信箱如何授權 | Google 的限制 |
+| --- | --- | --- |
+| **外部 Testing（測試）** | 先把每個新 Gmail 地址加入「目標對象」的測試名單，再從工具新增。 | 測試名單最多 100 位。Gmail 測試授權在同意後 7 天到期，屆時需要重新授權。 |
+| **外部 In production（正式環境），尚未驗證** | 若符合 Google 的有限對象使用例外，可從工具直接新增，由各帳號同意。 | Google 可能顯示未驗證警告。請求未核准的機密或受限制權限時，通常每個 OAuth 專案最多可累計 100 個新授權 Google 帳號。這是專案整個生命週期的額度，無法重設。 |
+| **公司或學校的 Gmail** | 用帳號原有的 Google Workspace 身分授權。 | 組織管理員可能封鎖第三方工具或限制 Gmail 權限，即使專案仍有額度也可能無法授權。 |
+
+公開 ZIP 由使用者匯入自己的 OAuth 設定，所以不同 Google Cloud 專案各自計算額度。如果日後要用同一個 OAuth 專案對外大規模發行，請確認適用的 Google 驗證要求。有限對象使用仍須遵守 Google 的資料使用政策。
+
+[Google OAuth 發布狀態與使用者上限](https://support.google.com/cloud/answer/15549945?hl=en) · [有限對象使用例外](https://support.google.com/cloud/answer/13464323?hl=en)
+
 ## 用 Codex 查信
 
 在 Codex 開啟解壓後的資料夾，輸入「查詢所有已授權信箱近七天的未讀郵件，按來源整理，並列出查詢失敗的信箱」。你也可在同一資料夾開 PowerShell：
@@ -29,12 +43,15 @@ Windows 上的 Codex Gmail 工具。每次執行從 gogcli 取得最新授權清
 python ./review.py --query "is:unread newer_than:7d" --limit 10
 ```
 
+預設每個信箱回傳最多 10 個郵件串的中繼資料，可用 `--limit` 設定為 1 至 50。結果若標記 `more_available`，代表還有其餘符合條件的結果。
+
 ## 驗收與排查
 
 - 授權第一個帳號並查詢，再授權第二個帳號。重新查詢即可看到兩個來源，無須改提示詞或設定帳號清單。
 - 如有可撤銷的測試帳號，從 Google 的第三方存取設定撤銷該帳號對測試應用程式的授權，讓本機保留舊授權紀錄。再查詢時，確認另一個信箱正常，失效帳號出現在報告中。
-- reauthorization_required 表示該信箱需要重新授權。在管理介面選取該信箱並按「重新授權」，再於 Google 勾選讀取及寄信。Google 外部 Testing 模式的 Gmail 授權通常約七天需要重授。
-- partial 代表部分信箱成功，仍可使用其結果。all_failed 代表全部查詢失敗。查詢成功但 threads 為空代表該信箱沒有符合條件的郵件串。
+- **`reauthorization_required`**：在管理介面選該信箱，按「重新授權」，再於 Google 同意讀取及寄信。
+- **`permission_denied`**：先確認正在使用正確帳號、Cloud 專案已啟用 Gmail API、已登記所需權限，以及 Google 同意頁已核准 Gmail 讀取權限。公司或學校帳號也要檢查組織政策。
+- **`partial`** 表示部分信箱成功，**`all_failed`** 表示全部查詢失敗。查詢成功且 `threads` 是空清單時，該信箱沒有符合條件的郵件串。
 - 此原型在本機執行。郵件憑證由 gogcli 管理。查詢程式只開放 Gmail 搜尋命令，Codex 會收到查詢回傳的郵件中繼資料。
 
 第三方元件及參考來源見 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。
