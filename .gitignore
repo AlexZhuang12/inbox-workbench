@@ -1,0 +1,11 @@
+__pycache__/
+*.py[cod]
+.env
+.env.*
+client_secret*.json
+credentials*.json
+product-oauth.json
+*token*.json
+bin/gog.exe
+releases/
+*.zip
