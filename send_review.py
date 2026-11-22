@@ -7,10 +7,11 @@ import re
 import shutil
 import subprocess
 import tkinter as tk
-from tkinter import scrolledtext, ttk
+from tkinter import ttk
 
 from account_manager import PRODUCT_CLIENT, ROOT, SEND_SCOPE
 from review import GogError, run_gog
+from rose_ui import BACKGROUND, FONT, INK, SURFACE, RoseButton, RoseCard, configure_theme
 
 
 def address(value):
@@ -63,13 +64,22 @@ def main():
     window = tk.Tk()
     window.title("確認 Gmail 寄送")
     window.geometry("740x540")
-    panel = ttk.Frame(window, padding=16)
-    panel.pack(fill="both", expand=True)
-    preview = scrolledtext.ScrolledText(panel, wrap="word")
-    preview.pack(fill="both", expand=True)
+    window.minsize(520, 360)
+    configure_theme(window)
+    outer = ttk.Frame(window, style="Rose.TFrame", padding=16)
+    outer.pack(fill="both", expand=True)
+    ttk.Label(outer, text="確認寄出郵件", style="Title.TLabel").pack(anchor="w", pady=(0, 12))
+    card = RoseCard(outer)
+    card.pack(fill="both", expand=True)
+    panel = card.content
+    preview = tk.Text(panel, wrap="word", bg=SURFACE, fg=INK, font=(FONT, 11), borderwidth=0, highlightthickness=0)
+    scrollbar = ttk.Scrollbar(panel, orient="vertical", style="Rose.Vertical.TScrollbar", command=preview.yview)
+    scrollbar.pack(side="right", fill="y")
+    preview.configure(yscrollcommand=scrollbar.set)
+    preview.pack(side="left", fill="both", expand=True)
     preview.insert("1.0", f"寄件人：{sender}\n收件人：{', '.join(recipients)}\n主旨：{subject}\n\n{body}")
     preview.configure(state="disabled")
-    controls = ttk.Frame(panel)
+    controls = ttk.Frame(outer, style="Rose.TFrame")
     controls.pack(fill="x", pady=(12, 0))
     status = "cancelled"
 
@@ -85,9 +95,9 @@ def main():
             status = "send_unconfirmed"
         window.destroy()
 
-    confirm_button = ttk.Button(controls, text="確認寄出", command=confirm)
+    confirm_button = RoseButton(controls, "確認寄出", confirm, primary=True, background=BACKGROUND)
     confirm_button.pack(side="right")
-    cancel_button = ttk.Button(controls, text="取消", command=window.destroy)
+    cancel_button = RoseButton(controls, "取消", window.destroy, background=BACKGROUND)
     cancel_button.pack(side="right", padx=8)
     cancel_button.focus_set()
     window.mainloop()

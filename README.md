@@ -4,9 +4,11 @@ Windows 上的 Codex Gmail 工具，可連接多個信箱，按來源整理查�
 
 ## 安裝
 
-- **Windows ZIP**：從 [v0.3.1 Release](https://github.com/AlexZhuang12/inbox-workbench/releases/tag/v0.3.1) 下載 inbox-workbench-v0.3.1-windows.zip 並完整解壓。ZIP 已附 Windows 版 gogcli。
+- **Windows ZIP**：從 [最新 Release](https://github.com/AlexZhuang12/inbox-workbench/releases/latest) 下載 Windows ZIP 並完整解壓到自己選擇的固定位置。ZIP 已附 Windows 版 gogcli。
 - **原始碼**：使用 git clone https://github.com/AlexZhuang12/inbox-workbench.git，再從 [gogcli Windows Releases](https://github.com/openclaw/gogcli/releases) 安裝 gogcli v0.48.1 或相容版本。把 gog.exe 放在 PATH，或放在專案的 bin 目錄。
 - 兩種方式都需要 Python 3.10 或更新版（含 Tkinter）。可在 PowerShell 執行 python --version 確認。
+
+**工具資料夾由你決定。** 用 ZIP 時，解壓位置就是工具存放位置。用 git clone 時，由你指定 clone 的目的地。請保留同一個資料夾供日後使用。授權 Gmail 的檔案選擇器只用來選 OAuth JSON，工具也無須另外安裝 Codex 外掛。
 
 ## 第一次設定 Google OAuth
 
@@ -20,6 +22,14 @@ Windows 上的 Codex Gmail 工具，可連接多個信箱，按來源整理查�
 4. 在 **用戶端 → 建立用戶端**選擇 **電腦版應用程式（Desktop app）**，下載 Google 提供的 OAuth JSON。保留在本機。
 5. 雙擊 **Open Gmail Manager.cmd**，按「匯入 OAuth 設定」選取自己的 JSON。已設定過信箱工作台的 gogcli 用戶端可沿用。
 6. 按「新增 Gmail」，在 Google 選取對應帳號並同意讀取與寄信。每個信箱各自同意，可共用同一個 Cloud 專案。回到工具，按「測試全部信箱」。
+
+## 管理信箱
+
+v0.4.0 的粉色圓角介面涵蓋主視窗、暱稱與新增信箱對話框，以及寄信預覽。從舊版升級時，使用同一 Windows 帳戶開啟新版即可沿用本機的 Gmail 授權與已儲存偏好。
+
+在信箱列表拖曳一列，或選取後按「上移／下移」調整排序。按「編輯暱稱」可設定顯示名稱，留空即可清除。排序和暱稱會保存在本機，不影響 Gmail 地址或實際寄件人。
+
+「查信狀態」顯示最近一次測試的結果。「寄信授權紀錄」來自本機 gogcli 設定。新增或重新授權時，下方 Google 授權區會顯示正在處理的帳號，連結備妥後可按「複製授權連結」。
 
 ## 多信箱與 Google OAuth 限制
 
@@ -35,9 +45,15 @@ Windows 上的 Codex Gmail 工具，可連接多個信箱，按來源整理查�
 
 [Google OAuth 發布狀態與使用者上限](https://support.google.com/cloud/answer/15549945?hl=en) · [有限對象使用例外](https://support.google.com/cloud/answer/13464323?hl=en)
 
-## 用 Codex 查信
+## 設定本機 Codex 專案
 
-在 Codex 開啟解壓後的資料夾，輸入「查詢所有已授權信箱近七天的未讀郵件，按來源整理，並列出查詢失敗的信箱」。你也可在同一資料夾開 PowerShell：
+1. 先在 Windows 雙擊 **Open Gmail Manager.cmd**，新增至少一個 Gmail，並按「測試全部信箱」確認可查詢。
+2. 用同一台電腦上的 Codex 開啟你解壓或 clone 的工具資料夾。請選擇**直接含有 AGENTS.md、review.py 和 send_review.py 的那一層**，並在該資料夾對應的本機 Codex 專案開啟對話。
+3. 試著輸入「查詢所有已授權信箱近七天的未讀郵件，按來源整理，並列出查詢失敗的信箱」。設定一次後，日後可從 Codex 側邊欄回到同一專案。
+
+Gmail 授權會由本機 gogcli 保存。解壓、啟動與授權流程不會自動建立 Codex 專案或桌面捷徑。授權完成後，平常查信無須保持 Chrome 開啟。若 Codex 提示允許執行本機命令，核對提示後再繼續。
+
+也可以在同一工具資料夾下開 PowerShell 直接測試：
 
 ```powershell
 python ./review.py --query "is:unread newer_than:7d" --limit 10
